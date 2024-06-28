@@ -12,6 +12,7 @@ const {
   commonAfterAll,
   u1Token,
 } = require("./_testCommon");
+const { describe, default: test } = require("node:test");
 
 beforeAll(commonBeforeAll);
 beforeEach(commonBeforeEach);
@@ -227,3 +228,37 @@ describe("DELETE /companies/:handle", function () {
     expect(resp.statusCode).toEqual(404);
   });
 });
+
+
+describe("GET /companies", function () {
+  test("works with name filter", async function () {
+    const res = await request.get('/companies?name=net')
+    expect(res.body.companies.length > 0).toBeTruthy()
+  })
+
+  test('works with minEmployees filter', async function () {
+    const res = await request.get('/companies?minEmployees=10')
+    expect(res.body.companies.every((company) => company.numEmployees >= 10)).toBeTruthy()
+  })
+
+  test('works with maxEmployees filter', async function () {
+    const res = await request.get('/companies?minEmployees=50')
+    expect(res.body.companies.every((company) => company.numEmployees <= 50)).toBeTruthy()
+  })
+
+  test('works with minEmployees and maxEmployees filter', async function () {
+    const res = await request.get('/companies?minEmployees=10&maxEmployees=50')
+    expect(res.body.companies.every((company) => company.numEmployees >= 10 && company.numEmploees <= 50))
+  })
+
+  test('throws error if minEmployees is greater than maxEmployees', async function() {
+    const res = await request.get('/companies?minEmployees=50&maxEmployees=10')
+    expect(res.status).toBe(400)
+  })
+
+  test('throws error if no filter is provided', async function () {
+    const res = await request.get('/companies')
+    expect(res.status).toBe(400)
+  })
+
+})

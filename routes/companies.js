@@ -39,6 +39,15 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
   }
 });
 
+
+router.get("/", async function (req, res, next) {
+  try {
+    const companies = await Company.findAll();
+    return res.json({ companies });
+  } catch (err) {
+    return next(err);
+  }
+});
 /** GET /  =>
  *   { companies: [ { handle, name, description, numEmployees, logoUrl }, ...] }
  *
@@ -50,10 +59,18 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
  * Authorization required: none
  */
 
-router.get("/", async function (req, res, next) {
+router.get("/companies", async function (req, res, next) {
   try {
-    const companies = await Company.findAll();
-    return res.json({ companies });
+    const find = {}
+    if (req.query.name) find.name = req.query.name
+    if (req.query.minEmployees) find.minEmployees = parseInt(req.query.minEmployees)
+    if (req.query.maxEmployees) find.maxEmployees = parseInt(req.query.maxEmployees)
+
+    if (Object.keys(find).length === 0) {
+      throw new BadRequestError('No filter provided')
+    }
+    const companies = await Company.filter(find)
+    return res.json({ companies })
   } catch (err) {
     return next(err);
   }

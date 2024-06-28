@@ -61,6 +61,44 @@ class Company {
     return companiesRes.rows;
   }
 
+/* Given a param find and return data about those companies
+
+Returns { handle, name, description, numEmployees, logoUrl, jobs }
+where job is [{ id, title, salary, equity, companyHandle }, ...]
+Throws NotFoundError if not found
+*/
+
+static async filter(find) {
+  let query = `SELECT * FROM companies`
+  let params = []
+
+  if (find.name) {
+    query += `WHERE name ILIKE $1`
+    params.push(`%${find.name}%`)
+  }
+
+  if (find.minEmployees) {
+    if (find.maxEmployees && find.minEmployees > find.maxEmployees) {
+      throw new BadRequestError('minEmploees cannot be greater than maxEmployees')
+    }
+    query += ` AND numEmployees >= $${params.length + 1}`
+    params.push(find.minEmployees)
+  }
+
+  if (find.maxEmployees) {
+    query += ` AND numEmployees <= $${params.length + 1}`
+    params.push(find.maxEmployees)
+  }
+
+  const companyRes = await db.query(query, params)
+
+  if (companyRes.rows.length === 0) {
+    throw new NotFoundError('No company with given filter')
+  }
+
+  return companyRes.rows
+}
+
   /** Given a company handle, return data about company.
    *
    * Returns { handle, name, description, numEmployees, logoUrl, jobs }

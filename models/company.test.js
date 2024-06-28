@@ -9,6 +9,10 @@ const {
   commonAfterEach,
   commonAfterAll,
 } = require("./_testCommon");
+const { default: test } = require("node:test");
+const { maxHeaderSize } = require("http");
+const { fail } = require("assert");
+const exp = require("constants");
 
 beforeAll(commonBeforeAll);
 beforeEach(commonBeforeEach);
@@ -205,4 +209,47 @@ describe("remove", function () {
       expect(err instanceof NotFoundError).toBeTruthy();
     }
   });
+});
+
+/************************************** get with filter */
+
+describe("filter", function () {
+  test("works with name filter", async function () {
+    let company = await Company.filter({ name: 'net' });
+    expect(companies.length > 0).toBeTruthy();
+  });
+
+  test("works with minEmployees filter", async function () {
+    let companies = await Company.filter({ minEmployees: 10 })
+    expect(companies.every((company) => company.numEmployees >= 10)).toBeTruthy()
+  });
+
+  test("works with maxEmployees filter", async function () {
+    let companies = await Company.filter({ maxEmployees: 50 })
+    expect(companies.every((company) => company.numEmployees <= 50)).toBeTruthy()
+  });
+
+  test("works with both minEmployees and maxEmployees filter", async function () {
+    let companies = await Company.filter({ minEmployees: 10, maxEmployees: 50 })
+    expect(companies.every((company) => company.numEmployees >= 10 && company.numEmployees <= 50)).toBeTruthy()
+  })
+
+  test("throws error if minEmployees is greater than maxEmployees", async function () {
+    try {
+      await Company.filter({ minEmployees: 50, maxEmployees: 10 })
+      fail()
+    } catch (e) {
+      expect(e instanceof BadRequestError).toBeTruthy()
+    }
+  })
+
+  test('throws error if no company found', async function () {
+    try {
+      await Company.filter({ name: "nope" })
+      fail()
+    } catch (e) {
+      expect(e instanceof NotFoundError).toBeTruthy()
+    }
+  })
+ 
 });
