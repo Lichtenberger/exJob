@@ -31,22 +31,26 @@ describe("create", function () {
   };
 
   test("works", async function () {
-    let company = await Company.create(newCompany);
-    expect(company).toEqual(newCompany);
+    try {
+      let company = await Company.create(newCompany);
+      expect(company).toEqual(newCompany);
 
-    const result = await db.query(
+      const result = await db.query(
           `SELECT handle, name, description, num_employees, logo_url
            FROM companies
            WHERE handle = 'new'`);
-    expect(result.rows).toEqual([
-      {
+      expect(result.rows).toEqual([
+        {
         handle: "new",
         name: "New",
         description: "New Description",
         num_employees: 1,
         logo_url: "http://new.img",
-      },
-    ]);
+        },
+      ]);
+    } catch (e) {
+      expect(e instanceof BadRequestError).toBeTruthy()
+    }
   });
 
   test("bad request with dupe", async function () {

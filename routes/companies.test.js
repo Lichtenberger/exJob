@@ -62,6 +62,18 @@ describe("POST /companies", function () {
         .set("authorization", `Bearer ${u1Token}`);
     expect(resp.statusCode).toEqual(400);
   });
+
+  test("unauth for anon", async function () {
+    const resp = await request(app).post("/companies");
+    expect(resp.statusCode).toEqual(401);
+  });
+
+  test("unauth for non-admin", async function () {
+    const resp = await request(app)
+      .post("/companies")
+      .set("authorization", `Bearer ${u1Token}`);
+    expect(resp.statusCode).toEqual(401);
+  });
 });
 
 /************************************** GET /companies */
