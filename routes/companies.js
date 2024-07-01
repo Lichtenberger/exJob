@@ -11,6 +11,7 @@ const Company = require("../models/company");
 
 const companyNewSchema = require("../schemas/companyNew.json");
 const companyUpdateSchema = require("../schemas/companyUpdate.json");
+const companySearchSchema = require('../schema/companySearch.json')
 
 const router = new express.Router();
 
@@ -24,7 +25,7 @@ const router = new express.Router();
  * Authorization required: login
  */
 
-router.post("/", ensureLoggedIn, async function (req, res, next) {
+router.post("/", ensureAdmin, async function (req, res, next) {
   try {
     const validator = jsonschema.validate(req.body, companyNewSchema);
     if (!validator.valid) {
@@ -39,15 +40,6 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
   }
 });
 
-
-router.get("/", async function (req, res, next) {
-  try {
-    const companies = await Company.findAll();
-    return res.json({ companies });
-  } catch (err) {
-    return next(err);
-  }
-});
 /** GET /  =>
  *   { companies: [ { handle, name, description, numEmployees, logoUrl }, ...] }
  *
@@ -59,22 +51,26 @@ router.get("/", async function (req, res, next) {
  * Authorization required: none
  */
 
-router.get("/companies", async function (req, res, next) {
-  try {
-    const find = {}
-    if (req.query.name) find.name = req.query.name
-    if (req.query.minEmployees) find.minEmployees = parseInt(req.query.minEmployees)
-    if (req.query.maxEmployees) find.maxEmployees = parseInt(req.query.maxEmployees)
+router.get("/", async function (req, res, next) {
+  const q = req.query
+  if (q.minEmployees !== undefined) q.minEmployees = +q.minEmployees
+  if (q.maxEmployees !== undefined) q.maxEmployees = +q.maxEmployees
 
-    if (Object.keys(find).length === 0) {
-      throw new BadRequestError('No filter provided')
+  try {
+    const validator = jsonschema.validate(q, companySearchSchema)
+    if (!validator.valid) {
+      const errs = validator.errors.map(e => e.stack)
+      throw new BadRequestError(errs)
     }
-    const companies = await Company.filter(find)
+
+    const companies = await Company.findAll(q)
     return res.json({ companies })
-  } catch (err) {
-    return next(err);
+  } catch (e) {
+    return next(e)
   }
 });
+
+
 
 /** GET /[handle]  =>  { company }
  *

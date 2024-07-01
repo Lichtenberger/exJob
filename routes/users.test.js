@@ -11,7 +11,10 @@ const {
   commonBeforeEach,
   commonAfterEach,
   commonAfterAll,
+  testJobIds,
   u1Token,
+  u2Token,
+  adminToken,
 } = require("./_testCommon");
 
 beforeAll(commonBeforeAll);
@@ -80,7 +83,8 @@ describe("POST /users", function () {
           password: "password-new",
           email: "new@email.com",
           isAdmin: true,
-        });
+        })
+        .set('authorization', `Bearer ${u1Token}`)
     expect(resp.statusCode).toEqual(401);
   });
 
@@ -146,7 +150,8 @@ describe("GET /users", function () {
 
   test("unauth for anon", async function () {
     const resp = await request(app)
-        .get("/users");
+        .get("/users")
+        .set('authorization', `Bearer ${u1Token}`)
     expect(resp.statusCode).toEqual(401);
   });
 
@@ -176,6 +181,7 @@ describe("GET /users/:username", function () {
         lastName: "U1L",
         email: "user1@user.com",
         isAdmin: false,
+        applications: [testJobIds[0]],
       },
     });
   });

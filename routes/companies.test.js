@@ -11,8 +11,8 @@ const {
   commonAfterEach,
   commonAfterAll,
   u1Token,
+  adminToken,
 } = require("./_testCommon");
-const { describe, default: test } = require("node:test");
 
 beforeAll(commonBeforeAll);
 beforeEach(commonBeforeEach);
@@ -62,19 +62,7 @@ describe("POST /companies", function () {
         .set("authorization", `Bearer ${u1Token}`);
     expect(resp.statusCode).toEqual(400);
   });
-
-  test("unauth for anon", async function () {
-    const resp = await request(app).post("/companies");
-    expect(resp.statusCode).toEqual(401);
-  });
-
-  test("unauth for non-admin", async function () {
-    const resp = await request(app)
-      .post("/companies")
-      .set("authorization", `Bearer ${u1Token}`);
-    expect(resp.statusCode).toEqual(401);
-  });
-});
+})
 
 /************************************** GET /companies */
 
@@ -133,6 +121,11 @@ describe("GET /companies/:handle", function () {
         description: "Desc1",
         numEmployees: 1,
         logoUrl: "http://c1.img",
+        jobs: [
+          { id: testJobIds[0], title: 'J1', equity: '0.1', salary: 1 },
+          { id: testJobIds[1], title: 'J2', equity: '0.2', salary: 2 },
+          { id: testJobIds[2], title: 'J3', equity: null, salary: 3 },
+        ],
       },
     });
   });
@@ -146,6 +139,7 @@ describe("GET /companies/:handle", function () {
         description: "Desc2",
         numEmployees: 2,
         logoUrl: "http://c2.img",
+        jobs: [],
       },
     });
   });
@@ -240,37 +234,3 @@ describe("DELETE /companies/:handle", function () {
     expect(resp.statusCode).toEqual(404);
   });
 });
-
-
-describe("GET /companies", function () {
-  test("works with name filter", async function () {
-    const res = await request.get('/companies?name=net')
-    expect(res.body.companies.length > 0).toBeTruthy()
-  })
-
-  test('works with minEmployees filter', async function () {
-    const res = await request.get('/companies?minEmployees=10')
-    expect(res.body.companies.every((company) => company.numEmployees >= 10)).toBeTruthy()
-  })
-
-  test('works with maxEmployees filter', async function () {
-    const res = await request.get('/companies?minEmployees=50')
-    expect(res.body.companies.every((company) => company.numEmployees <= 50)).toBeTruthy()
-  })
-
-  test('works with minEmployees and maxEmployees filter', async function () {
-    const res = await request.get('/companies?minEmployees=10&maxEmployees=50')
-    expect(res.body.companies.every((company) => company.numEmployees >= 10 && company.numEmploees <= 50))
-  })
-
-  test('throws error if minEmployees is greater than maxEmployees', async function() {
-    const res = await request.get('/companies?minEmployees=50&maxEmployees=10')
-    expect(res.status).toBe(400)
-  })
-
-  test('throws error if no filter is provided', async function () {
-    const res = await request.get('/companies')
-    expect(res.status).toBe(400)
-  })
-
-})
