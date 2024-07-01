@@ -38,7 +38,7 @@ describe('POST /jobs', function () {
                 id: expect.any(Number),
                 title: 'J-new',
                 salary: 10,
-                equity: '0.2'
+                equity: '0.2',
                 companyHandle: 'c1',
             },
         })

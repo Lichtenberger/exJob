@@ -218,7 +218,7 @@ class User {
       `SELECT id FROM jobs WHERE id = $1`, [jobId])
     const job = preCheck.rows[0]
 
-    if (!job) throw new NotFoundError(`No job ${jobId}`)
+    if (!job) throw new NotFoundError(`No job: ${jobId}`)
 
     const preCheck2 = await db.query(
       `SELECT username FROM users WHERE username = $1`, [username]

@@ -8,17 +8,22 @@ class Job {
 
     static async create(data) {
         const result = await db.query(
-            `INSERT INTO jobs (title, salary, equity, company_handle) VALUES ($1, $2, $3, $4) RETURNING id, title, salary, equity, company_handle AS 'companyHandle'`,
+              `INSERT INTO jobs (title,
+                                 salary,
+                                 equity,
+                                 company_handle)
+               VALUES ($1, $2, $3, $4)
+               RETURNING id, title, salary, equity, company_handle AS "companyHandle"`,
             [
-                data.title, 
-                data.salary,
-                data.equity,
-                data.companyHandle,
-            ])
-        let job = result.rows[0]
-
-        return job
-    }
+              data.title,
+              data.salary,
+              data.equity,
+              data.companyHandle,
+            ]);
+        let job = result.rows[0];
+    
+        return job;
+      }
 
     static async findAll({ minSalary, hasEquity, title } = {}) {
         let query = `SELECT j.id, j.title, j.salary, j.equity, j.company_handle AS "companyName" FROM jobs AS j LEFT JOIN companies AS c ON c.handle = j.company_handle`
