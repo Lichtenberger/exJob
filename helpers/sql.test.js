@@ -1,28 +1,60 @@
-const { describe, it } = require('node:test')
-const sqlCI = require('./sql')
-const { hasUncaughtExceptionCaptureCallback } = require('process')
 
-describe('sqlForPartialUpdate', () => {
-    it('should throw an derror is dataToUpdate is empty', () => {
-        const jsToSql = { firstName: 'first_name', age: 'age' }
-        hasUncaughtExceptionCaptureCallback(() => sqlCI.sqlForPartialUpdate({}, jsToSql)).toThrowError('Bad Request: No data')
-    })
+const { sqlForPartialUpdate } = require("./sql");
+const { BadRequestError } = require('./sql')
 
-    it('should convert js keys to sql keys', () => {
-        const jsToSql = { firstName: 'first_name', age: 'age' }
-        const dataToUpdate = { firstName: 'Aliya', age: 32 }
-        const result = sqlCI.sqlForPartialUpdate(dataToUpdate, jsToSql)
-        hasUncaughtExceptionCaptureCallback(result).toEqual({
-            setCols: `"first_name"=$1, "age"=$2`, values: ['Aliya', 32]
-        })
-    })
+/**
+ * Test suite for the sqlForPartialUpdate function.
+ */
+describe("sqlForPartialUpdate()", () => {
+  /**
+   * Test case: When dataToUpdate is empty.
+   * Expected behavior: BadRequestError should be thrown with "No data" message.
+   */
+  test("throws BadRequestError when dataToUpdate is empty", () => {
+    const dataToUpdate = {};
+    const jsToSql = {};
 
-    it('should use js key if jsToSql does not have a mapping', () => {
-        const jsToSql = { firstName: 'first_name' }
-        const dataToUpdate = { firstName: 'Aliya', age: 32 }
-        const result = sqlCI.sqlForPartialUpdate(dataToUpdate, jsToSql)
-        expect(result).toEqual({
-            setCols: `"first_name"=$1, "age"=$2`, values: ['Aliya', 32],
-        })
-    })
-})
+    expect(() => sqlForPartialUpdate(dataToUpdate, jsToSql))
+      .toThrow(BadRequestError);
+  });
+
+  /**
+   * Test case: When dataToUpdate contains valid data.
+   * Expected behavior: Return object with setCols and values properties.
+   */
+  test("returns setCols and values for valid data", () => {
+    const dataToUpdate = {
+      firstName: 'Aliya',
+      age: 32
+    };
+    const jsToSql = {
+      firstName: 'first_name',
+      age: 'age'
+    };
+    const expectedCols = '"first_name"=$1, "age"=$2';
+    const expectedValues = ['Aliya', 32];
+    const result = sqlForPartialUpdate(dataToUpdate, jsToSql);
+
+    expect(result).toEqual({
+      setCols: expectedCols,
+      values: expectedValues
+    });
+  });
+
+  /**
+   * Test case: When jsToSql is not provided.
+   * Expected behavior: Columns should be wrapped with double quotes.
+   */
+  test("uses original column names when jsToSql is not provided", () => {
+    const dataToUpdate = {
+      firstName: 'Aliya',
+      age: 32
+    };
+    const result = sqlForPartialUpdate(dataToUpdate);
+
+    expect(result).toEqual({
+      setCols: '"firstName"=$1, "age"=$2',
+      values: ['Aliya', 32]
+    });
+  });
+});

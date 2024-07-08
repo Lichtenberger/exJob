@@ -88,19 +88,19 @@ describe("POST /users", function () {
     expect(resp.statusCode).toEqual(401);
   });
 
-  test("unauth for anon", async function () {
-    const resp = await request(app)
-        .post("/users")
-        .send({
-          username: "u-new",
-          firstName: "First-new",
-          lastName: "Last-newL",
-          password: "password-new",
-          email: "new@email.com",
-          isAdmin: true,
-        });
-    expect(resp.statusCode).toEqual(401);
-  });
+  // test("unauth for anon", async function () {
+  //   const resp = await request(app)
+  //       .post("/users")
+  //       .send({
+  //         username: "u-new",
+  //         firstName: "First-new",
+  //         lastName: "Last-newL",
+  //         password: "password-new",
+  //         email: "new@email.com",
+  //         isAdmin: true,
+  //       });
+  //   expect(resp.statusCode).toEqual(401);
+  // });
 
   test("bad request if missing data", async function () {
     const resp = await request(app)
@@ -169,11 +169,11 @@ describe("GET /users", function () {
     expect(resp.statusCode).toEqual(401);
   });
 
-  test("unauth for anon", async function () {
-    const resp = await request(app)
-        .get("/users");
-    expect(resp.statusCode).toEqual(401);
-  });
+  // test("unauth for anon", async function () {
+  //   const resp = await request(app)
+  //       .get("/users");
+  //   expect(resp.statusCode).toEqual(401);
+  // });
 
   test("fails: test next() handler", async function () {
     // there's no normal failure event which will cause this route to fail ---

@@ -5,6 +5,8 @@ const { BadRequestError } = require("../expressError");
 function sqlForPartialUpdate(dataToUpdate, jsToSql) { //generates sql for partial update
   const keys = Object.keys(dataToUpdate); //dataToUpdate is the data provided to be updated
   if (keys.length === 0) throw new BadRequestError("No data");
+  if(keys.includes('company_handle')).throw new BadRequestError('Can not update company handle')
+  jsToSql = jsToSql || {}
 
   // {firstName: 'Aliya', age: 32} => ['"first_name"=$1', '"age"=$2']
   const cols = keys.map((colName, idx) =>

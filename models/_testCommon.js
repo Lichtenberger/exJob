@@ -8,8 +8,10 @@ const testJobIds = []
 async function commonBeforeAll() {
   // noinspection SqlWithoutWhere
   await db.query("DELETE FROM companies");
+  //await db.query("TRUNCATE TABLE companies RESTART IDENTITY CASCADE");
   // noinspection SqlWithoutWhere
   await db.query("DELETE FROM users");
+ //await db.query("TRUNCATE TABLE users RESTART IDENTITY CASCADE");
 
   await db.query(`
     INSERT INTO companies(handle, name, num_employees, description, logo_url)
